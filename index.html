@@ -289,8 +289,8 @@
   // ── Devuelve los insumos filtrados por proveedor seleccionado ───────────────
   function getInsumosFiltrados() {
     const provId = document.getElementById('proveedor').value;
-    if (!provId) return insumos; // sin proveedor → mostrar todos
-    return insumos.filter(ins => !ins.proveedor_id || ins.proveedor_id === provId);
+    if (!provId) return [];
+    return insumos.filter(ins => ins.proveedor_id === provId);
   }
 
   // ── Recarga las opciones de un select de insumo ─────────────────────────────
