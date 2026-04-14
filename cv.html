@@ -249,7 +249,7 @@
     btn.disabled=true;
     try{
       const res=await fetch(STOCK_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({local:LOCAL_NOMBRE,insumo,nivel:selectedLevel,nota})});
-      if(res.ok){statusDiv.className='stock-status ok';statusDiv.textContent='✅ Alerta enviada. Juan fue notificado.';setTimeout(()=>document.getElementById('stock-backdrop').classList.remove('open'),2000);}
+      if(res.ok){statusDiv.className='stock-status ok';statusDiv.textContent='✅ Alerta enviada a Gestión Saladbowl.';setTimeout(()=>document.getElementById('stock-backdrop').classList.remove('open'),2000);}
       else throw new Error();
     }catch{statusDiv.className='stock-status err';statusDiv.textContent='❌ Error al enviar. Intentá de nuevo.';btn.disabled=false;}
   }
