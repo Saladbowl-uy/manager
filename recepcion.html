@@ -493,7 +493,7 @@
 
       if (res.ok) {
         statusDiv.className   = 'status success';
-        statusDiv.textContent = '✅ Recepción registrada correctamente. Juan recibirá una notificación.';
+        statusDiv.textContent = '✅ Recepción registrada. Gestión Saladbowl fue notificada.';
         document.getElementById('recepcion-form').reset();
         document.getElementById('oc-info').style.display   = 'none';
         document.getElementById('items-section').style.display = 'none';
@@ -507,7 +507,7 @@
       }
     } catch (err) {
       statusDiv.className   = 'status error';
-      statusDiv.textContent = '❌ Error al registrar. Intentá de nuevo o avisá a Juan.';
+      statusDiv.textContent = '❌ Error al registrar. Intentá de nuevo.';
       btnSubmit.disabled    = false;
     }
   });
