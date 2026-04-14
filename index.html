@@ -504,7 +504,7 @@
 
       if (res.ok) {
         statusDiv.className = 'status success';
-        statusDiv.textContent = '✅ Orden enviada correctamente. Juan recibirá una notificación para aprobarla.';
+        statusDiv.textContent = '✅ Orden enviada a Gestión Saladbowl.';
         document.getElementById('oc-form').reset();
         document.getElementById('items-container').innerHTML = '';
         addRow();
@@ -513,7 +513,7 @@
       }
     } catch (err) {
       statusDiv.className = 'status error';
-      statusDiv.textContent = '❌ Error al enviar. Intentá de nuevo o avisá a Juan.';
+      statusDiv.textContent = '❌ Error al enviar. Intentá de nuevo.';
       btnSubmit.disabled = false;
     }
   });
