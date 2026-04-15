@@ -266,6 +266,7 @@
     </div>
 
     <div class="status" id="status"></div>
+    <a id="btn-volver-panel" href="#" style="display:none;margin-top:12px;background:#1b3a22;color:#fff;text-align:center;padding:13px;border-radius:12px;text-decoration:none;font-weight:700;font-size:.95rem;width:100%;box-sizing:border-box;">← Volver al panel</a>
 
   </form>
 </div>
@@ -502,6 +503,12 @@
         pesoFiles = [];
         renderPesoChips();
         selectedOC = null;
+        const backUrl = new URLSearchParams(location.search).get('back');
+        if (backUrl) {
+          const btnVolver = document.getElementById('btn-volver-panel');
+          btnVolver.href = backUrl;
+          btnVolver.style.display = 'block';
+        }
       } else {
         throw new Error('HTTP ' + res.status);
       }
