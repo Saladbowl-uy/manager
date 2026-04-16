@@ -413,6 +413,9 @@
     };
     document.getElementById('auth-pass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
     document.getElementById('auth-user').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('auth-pass').focus();});
+    const _topImg=document.querySelector('.top-bar h1 img,.top-bar img');
+    const _authImg=document.querySelector('#auth-overlay .auth-logo img');
+    if(_topImg&&_authImg){_authImg.src=_topImg.src;}else if(_authImg){_authImg.parentElement.style.display='none';}
     checkSession();
   })();
 
