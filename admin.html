@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Analytics — Saladbowl</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; }
+
+    .top-bar { background: #1b3a22; padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #2d5a35; position: sticky; top: 0; z-index: 50; }
+    .top-bar h1 { font-size: 1rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px; }
+    .top-bar .right { display: flex; align-items: center; gap: 10px; }
+    .top-date { font-size: .78rem; color: #86efac; }
+    .btn-salir { background: none; border: 1px solid rgba(255,255,255,.2); color: #aaa; font-size: .7rem; padding: 4px 10px; border-radius: 6px; cursor: pointer; }
+    .btn-salir:hover { border-color: rgba(255,255,255,.4); color: #fff; }
+    .btn-refresh { background: none; border: 1px solid rgba(134,239,172,.35); color: #86efac; font-size: .7rem; padding: 4px 10px; border-radius: 6px; cursor: pointer; transition: background .15s; }
+    .btn-refresh:hover { background: rgba(134,239,172,.12); }
+
+    .container { max-width: 1100px; margin: 0 auto; padding: 24px 18px 60px; }
+
+    .section-title { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: #475569; margin: 30px 0 12px; }
+
+    /* KPI grid */
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(165px, 1fr)); gap: 12px; }
+    .kpi-card { background: #1e293b; border-radius: 14px; padding: 18px 20px; border: 1px solid #334155; }
+    .kpi-label { font-size: .68rem; color: #64748b; text-transform: uppercase; letter-spacing: .07em; margin-bottom: 10px; }
+    .kpi-value { font-size: 2.6rem; font-weight: 800; line-height: 1; letter-spacing: -.02em; }
+    .kpi-sub { font-size: .72rem; color: #64748b; margin-top: 7px; }
+    .up { color: #22c55e; } .down { color: #ef4444; } .same { color: #94a3b8; }
+    .c-green { color: #22c55e; } .c-amber { color: #f59e0b; } .c-red { color: #ef4444; } .c-blue { color: #60a5fa; } .c-white { color: #f1f5f9; } .c-purple { color: #c084fc; }
+
+    /* Card base */
+    .card { background: #1e293b; border-radius: 14px; padding: 20px 22px; border: 1px solid #334155; }
+    .card-title { font-size: .75rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: .07em; margin-bottom: 16px; }
+
+    /* Tendencia mensual */
+    .month-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .month-label { font-size: .73rem; color: #64748b; width: 54px; flex-shrink: 0; text-align: right; }
+    .bar-track { flex: 1; background: #0f172a; border-radius: 6px; height: 26px; overflow: hidden; display: flex; align-items: stretch; }
+    .bar-seg { height: 100%; transition: width .7s ease; min-width: 0; }
+    .bar-seg.recibida { background: #16a34a; }
+    .bar-seg.pendiente { background: #d97706; }
+    .bar-seg.diferencias { background: #dc2626; }
+    .month-total { font-size: .8rem; color: #94a3b8; font-weight: 600; width: 26px; text-align: right; flex-shrink: 0; }
+
+    .legend { display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
+    .legend-item { display: flex; align-items: center; gap: 5px; font-size: .7rem; color: #64748b; }
+    .legend-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+
+    /* Dos columnas */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    /* Por local */
+    .local-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .local-name { font-size: .82rem; color: #cbd5e1; width: 110px; flex-shrink: 0; }
+    .local-track { flex: 1; background: #0f172a; border-radius: 4px; height: 20px; overflow: hidden; }
+    .local-fill { height: 100%; border-radius: 4px; transition: width .7s; }
+    .local-fill.pocitos { background: #3b82f6; }
+    .local-fill.cv { background: #a855f7; }
+    .local-count { font-size: .78rem; color: #64748b; width: 28px; text-align: right; flex-shrink: 0; }
+
+    /* Por estado */
+    .estado-list { list-style: none; }
+    .estado-item { display: flex; align-items: center; justify-content: space-between; padding: 9px 0; border-bottom: 1px solid #0f172a; }
+    .estado-item:last-child { border-bottom: none; }
+    .eb { display: inline-block; padding: 3px 11px; border-radius: 20px; font-size: .7rem; font-weight: 600; }
+    .eb-recibida { background: #14532d; color: #86efac; }
+    .eb-pendiente { background: #431a00; color: #fcd34d; }
+    .eb-diferencias { background: #450a0a; color: #fca5a5; }
+    .estado-n { font-size: 1.1rem; font-weight: 700; color: #e2e8f0; }
+
+    /* Proveedores tabla */
+    .prov-table { width: 100%; border-collapse: collapse; }
+    .prov-table th { font-size: .65rem; text-transform: uppercase; letter-spacing: .08em; color: #475569; padding: 6px 10px 10px; text-align: left; border-bottom: 1px solid #334155; }
+    .prov-table td { padding: 10px 10px; font-size: .82rem; color: #e2e8f0; border-bottom: 1px solid #0f172a; vertical-align: middle; }
+    .prov-table tr:last-child td { border-bottom: none; }
+    .prov-table td.n { text-align: right; font-weight: 600; }
+    .prov-table td.pct { text-align: right; }
+    .pct-badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: .68rem; font-weight: 700; }
+    .pct-ok { background: #14532d; color: #86efac; }
+    .pct-warn { background: #422006; color: #fcd34d; }
+    .pct-bad { background: #450a0a; color: #fca5a5; }
+    .rank-num { color: #334155; font-weight: 700; font-size: .8rem; }
+    .mini-bar-wrap { background: #0f172a; border-radius: 3px; height: 6px; width: 80px; overflow: hidden; display: inline-block; margin-left: 6px; vertical-align: middle; }
+    .mini-bar { height: 100%; background: #3b82f6; border-radius: 3px; transition: width .7s; }
+
+    /* Insumos */
+    .ins-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .ins-name { font-size: .78rem; color: #cbd5e1; width: 170px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ins-track { flex: 1; background: #0f172a; border-radius: 4px; height: 14px; overflow: hidden; }
+    .ins-fill { height: 100%; background: #1d4ed8; border-radius: 4px; transition: width .7s; }
+    .ins-count { font-size: .72rem; color: #64748b; width: 24px; text-align: right; flex-shrink: 0; }
+
+    /* Loader y error */
+    .loader { text-align: center; padding: 80px 0; color: #334155; font-size: .9rem; }
+    .loader-spinner { display: inline-block; width: 28px; height: 28px; border: 3px solid #334155; border-top-color: #22c55e; border-radius: 50%; animation: spin .8s linear infinite; margin-bottom: 14px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Auth overlay */
+    #auth-overlay { display: none; position: fixed; inset: 0; background: #1b3a22; z-index: 9999; align-items: center; justify-content: center; }
+    #auth-overlay.visible { display: flex; }
+    .auth-box { background: #fff; border-radius: 16px; padding: 32px 28px; width: 100%; max-width: 340px; box-shadow: 0 20px 60px rgba(0,0,0,.5); }
+    .auth-logo { text-align: center; margin-bottom: 18px; }
+    .auth-logo img { height: 42px; }
+    .auth-title { font-size: 1.05rem; font-weight: 800; color: #1b3a22; text-align: center; margin-bottom: 22px; }
+    .auth-field { margin-bottom: 14px; }
+    .auth-field label { display: block; font-size: .75rem; font-weight: 700; color: #666; margin-bottom: 5px; text-transform: uppercase; letter-spacing: .05em; }
+    .auth-field input { width: 100%; padding: 11px 14px; border: 1.5px solid #e5e7eb; border-radius: 8px; font-size: .95rem; outline: none; transition: border-color .15s; }
+    .auth-field input:focus { border-color: #1b3a22; }
+    .auth-btn { width: 100%; padding: 13px; background: #1b3a22; color: #fff; border: none; border-radius: 10px; font-size: .95rem; font-weight: 700; cursor: pointer; margin-top: 6px; transition: background .15s; }
+    .auth-btn:hover { background: #2d5a35; }
+    .auth-error { color: #dc2626; font-size: .82rem; text-align: center; margin-top: 10px; display: none; }
+
+    @media (max-width: 680px) {
+      .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+      .two-col { grid-template-columns: 1fr; }
+      .ins-name { width: 120px; }
+      .mini-bar-wrap { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="auth-overlay" class="visible">
+  <div class="auth-box">
+    <div class="auth-logo" id="auth-logo-wrap"><img src="isotipo.png" alt="Saladbowl" /></div>
+    <div class="auth-title">Gestión Saladbowl</div>
+    <div class="auth-field">
+      <label>Usuario</label>
+      <input type="text" id="auth-user" autocomplete="username" placeholder="usuario" />
+    </div>
+    <div class="auth-field">
+      <label>Contraseña</label>
+      <input type="password" id="auth-pass" autocomplete="current-password" placeholder="••••••" />
+    </div>
+    <button class="auth-btn" onclick="doLogin()">Entrar</button>
+    <div class="auth-error" id="auth-error">Solo acceso para administrador.</div>
+  </div>
+</div>
+
+<div class="top-bar">
+  <h1>📊 Analytics — Saladbowl</h1>
+  <div class="right">
+    <span class="top-date" id="top-date"></span>
+    <button class="btn-refresh" onclick="loadData()">↻ Actualizar</button>
+    <button class="btn-salir" onclick="doLogout()">Salir</button>
+  </div>
+</div>
+
+<div class="container" id="main-content">
+  <div class="loader"><div class="loader-spinner"></div><br>Cargando analytics…</div>
+</div>
+
+<script>
+  const ANALYTICS_URL = 'https://juanautomatationai.app.n8n.cloud/webhook/wf-analytics';
+  const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const DIAS  = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+
+  // ── Auth (solo juan) ──
+  (function(){
+    const PAGE = 'admin';
+    const USERS = { juan: { pass: 'Salab2026!', pages: ['all'] } };
+    function canAccess(u){ const usr=USERS[u]; return usr&&(usr.pages.includes('all')||usr.pages.includes(PAGE)); }
+    function checkSession(){
+      try{
+        const s=JSON.parse(localStorage.getItem('sb_auth')||'{}');
+        if(s.user&&s.expires>Date.now()&&canAccess(s.user)){ document.getElementById('auth-overlay').classList.remove('visible'); return; }
+      }catch(e){}
+      document.getElementById('auth-overlay').classList.add('visible');
+    }
+    window.doLogout=function(){ localStorage.removeItem('sb_auth'); location.reload(); };
+    window.doLogin=function(){
+      const user=document.getElementById('auth-user').value.trim().toLowerCase();
+      const pass=document.getElementById('auth-pass').value;
+      const err=document.getElementById('auth-error');
+      const u=USERS[user];
+      if(u&&u.pass===pass&&canAccess(user)){
+        localStorage.setItem('sb_auth',JSON.stringify({user,expires:Date.now()+12*3600000}));
+        document.getElementById('auth-overlay').classList.remove('visible');
+        err.style.display='none';
+      } else { err.style.display='block'; document.getElementById('auth-pass').value=''; }
+    };
+    document.getElementById('auth-pass').addEventListener('keydown',e=>{ if(e.key==='Enter') doLogin(); });
+    document.getElementById('auth-user').addEventListener('keydown',e=>{ if(e.key==='Enter') document.getElementById('auth-pass').focus(); });
+    // Logo: admin.html no tiene top-bar con img, ocultamos el logo
+    document.getElementById('auth-logo-wrap').style.display = 'none';
+    checkSession();
+  })();
+
+  // Fecha en top-bar
+  const _now = new Date();
+  document.getElementById('top-date').textContent = DIAS[_now.getDay()] + ' ' + _now.getDate() + ' de ' + MESES[_now.getMonth()];
+
+  // ── Helpers ──
+  function pctBadge(pct){
+    const cls = pct === 0 ? 'pct-ok' : pct <= 20 ? 'pct-warn' : 'pct-bad';
+    return `<span class="pct-badge ${cls}">${pct}%</span>`;
+  }
+
+  // ── Render ──
+  function render(data){
+    const { kpis, ocs_por_mes, prov_ranking, by_local, ins_top_prov } = data;
+    const maxMonth = Math.max(...ocs_por_mes.map(m => m.total), 1);
+    const maxProv  = prov_ranking.length > 0 ? prov_ranking[0].total : 1;
+    const maxIns   = ins_top_prov.length > 0 ? ins_top_prov[0].count : 1;
+    const totalLocal = Object.values(by_local).reduce((a,b) => a+b, 0) || 1;
+
+    const tendencia = kpis.ocs_mes_actual - kpis.ocs_mes_anterior;
+    const tendHTML = tendencia > 0
+      ? `<span class="up">▲ ${tendencia} vs mes ant.</span>`
+      : tendencia < 0
+        ? `<span class="down">▼ ${Math.abs(tendencia)} vs mes ant.</span>`
+        : `<span class="same">= igual que mes ant.</span>`;
+
+    const mesActual = ocs_por_mes[ocs_por_mes.length - 1] || { recibidas: 0, diferencias: 0, pendientes: 0 };
+
+    document.getElementById('main-content').innerHTML = `
+
+      <div class="section-title">Indicadores clave del mes</div>
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-label">OCs este mes</div>
+          <div class="kpi-value c-white">${kpis.ocs_mes_actual}</div>
+          <div class="kpi-sub">${tendHTML}</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Mes anterior</div>
+          <div class="kpi-value c-blue">${kpis.ocs_mes_anterior}</div>
+          <div class="kpi-sub">OCs totales</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Pendientes ahora</div>
+          <div class="kpi-value c-amber">${kpis.ocs_pendientes}</div>
+          <div class="kpi-sub">sin recibir</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Diferencias 30d</div>
+          <div class="kpi-value ${kpis.ocs_dif_30d > 0 ? 'c-red' : 'c-green'}">${kpis.ocs_dif_30d}</div>
+          <div class="kpi-sub">OCs con problemas</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Proveedores activos</div>
+          <div class="kpi-value c-green">${kpis.proveedores_activos}</div>
+          <div class="kpi-sub">en catálogo</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Insumos activos</div>
+          <div class="kpi-value c-purple">${kpis.insumos_activos}</div>
+          <div class="kpi-sub">productos</div>
+        </div>
+      </div>
+
+      <div class="section-title">Tendencia mensual — últimos 6 meses</div>
+      <div class="card">
+        <div class="legend">
+          <div class="legend-item"><div class="legend-dot" style="background:#16a34a"></div>Recibidas</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#d97706"></div>Pendientes</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#dc2626"></div>Diferencias</div>
+        </div>
+        ${ocs_por_mes.map(m => {
+          const pR = maxMonth > 0 ? Math.round(m.recibidas  / maxMonth * 100) : 0;
+          const pP = maxMonth > 0 ? Math.round(m.pendientes / maxMonth * 100) : 0;
+          const pD = maxMonth > 0 ? Math.round(m.diferencias/ maxMonth * 100) : 0;
+          return `<div class="month-row">
+            <div class="month-label">${m.label}</div>
+            <div class="bar-track">
+              <div class="bar-seg recibida"   style="width:${pR}%"></div>
+              <div class="bar-seg pendiente"  style="width:${pP}%"></div>
+              <div class="bar-seg diferencias"style="width:${pD}%"></div>
+            </div>
+            <div class="month-total">${m.total}</div>
+          </div>`;
+        }).join('')}
+      </div>
+
+      <div class="section-title">Distribución (historial completo)</div>
+      <div class="two-col">
+        <div class="card">
+          <div class="card-title">Por local</div>
+          ${Object.entries(by_local).sort((a,b)=>b[1]-a[1]).map(([local, count]) => {
+            const pct = Math.round(count / totalLocal * 100);
+            const cls = local.toLowerCase().includes('pocitos') ? 'pocitos' : 'cv';
+            return `<div class="local-row">
+              <div class="local-name">${local}</div>
+              <div class="local-track"><div class="local-fill ${cls}" style="width:${pct}%"></div></div>
+              <div class="local-count">${count}</div>
+            </div>`;
+          }).join('')}
+        </div>
+        <div class="card">
+          <div class="card-title">Por estado — mes actual</div>
+          <ul class="estado-list">
+            <li class="estado-item"><span class="eb eb-recibida">Recibidas</span><span class="estado-n">${mesActual.recibidas}</span></li>
+            <li class="estado-item"><span class="eb eb-pendiente">Pendientes</span><span class="estado-n">${mesActual.pendientes}</span></li>
+            <li class="estado-item"><span class="eb eb-diferencias">Diferencias</span><span class="estado-n">${mesActual.diferencias}</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="section-title">Ranking de proveedores</div>
+      <div class="card">
+        <table class="prov-table">
+          <thead><tr>
+            <th>#</th><th>Proveedor</th><th>OCs</th><th>Recibidas</th><th>Diferencias</th><th>% Dif.</th>
+          </tr></thead>
+          <tbody>
+            ${prov_ranking.map((p, i) => `<tr>
+              <td class="rank-num">${i+1}</td>
+              <td>
+                ${p.nombre}
+                <span class="mini-bar-wrap"><span class="mini-bar" style="width:${Math.round(p.total/maxProv*100)}%"></span></span>
+              </td>
+              <td class="n">${p.total}</td>
+              <td class="n" style="color:#22c55e">${p.recibidas}</td>
+              <td class="n" style="color:${p.diferencias>0?'#ef4444':'#334155'}">${p.diferencias}</td>
+              <td class="pct">${pctBadge(p.pct_dif)}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="section-title">Insumos por proveedor habitual</div>
+      <div class="card">
+        ${ins_top_prov.map(p => `<div class="ins-row">
+          <div class="ins-name" title="${p.nombre}">${p.nombre}</div>
+          <div class="ins-track"><div class="ins-fill" style="width:${Math.round(p.count/maxIns*100)}%"></div></div>
+          <div class="ins-count">${p.count}</div>
+        </div>`).join('')}
+      </div>
+    `;
+  }
+
+  async function loadData(){
+    document.getElementById('main-content').innerHTML = '<div class="loader"><div class="loader-spinner"></div><br>Cargando analytics…</div>';
+    try {
+      const res  = await fetch(ANALYTICS_URL);
+      const data = await res.json();
+      render(data);
+    } catch(e) {
+      document.getElementById('main-content').innerHTML = '<div class="loader">⚠️ Error al cargar. Tocá "Actualizar" para reintentar.</div>';
+    }
+  }
+
+  loadData();
+</script>
+</body>
+</html>
