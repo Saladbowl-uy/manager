@@ -205,7 +205,10 @@
 </div>
 
 <div class="card">
-  <h1>🛒 Nueva Orden de Compra</h1>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+    <h1 style="margin:0;">🛒 Nueva Orden de Compra</h1>
+    <button onclick="doLogout()" style="background:none;border:1px solid #ddd;color:#aaa;font-size:.72rem;padding:4px 10px;border-radius:6px;cursor:pointer;">Salir</button>
+  </div>
 
   <div id="form-loader" class="loader">Cargando datos…</div>
 
@@ -567,6 +570,7 @@
       }catch(e){}
       document.getElementById('auth-overlay').classList.add('visible');
     }
+    window.doLogout=function(){ localStorage.removeItem('sb_auth'); location.reload(); };
     window.doLogin=function(){
       const user=document.getElementById('auth-user').value.trim().toLowerCase();
       const pass=document.getElementById('auth-pass').value;
