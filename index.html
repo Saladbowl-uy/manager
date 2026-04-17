@@ -326,7 +326,7 @@
   function getInsumosFiltrados() {
     const provId = document.getElementById('proveedor').value;
     if (!provId) return [];
-    return insumos.filter(ins => ins.proveedor_id === provId);
+    return insumos.filter(ins => ins.proveedor_ids?.includes(provId));
   }
 
   // ── Recarga las opciones de un select de insumo ─────────────────────────────
