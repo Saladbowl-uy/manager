@@ -175,6 +175,7 @@
 </div>
 
 <div class="week-tabs">
+  <button class="week-tab" onclick="switchWeek(-7)">Semana anterior</button>
   <button class="week-tab active" onclick="switchWeek(0)">Esta semana</button>
   <button class="week-tab" onclick="switchWeek(7)">Semana próxima</button>
 </div>
@@ -274,7 +275,7 @@
     const days = Array.from({length:7},(_,i)=>{ const d=new Date(monday); d.setDate(monday.getDate()+i); return d; });
     const label = document.createElement('p');
     label.className = 'section-label';
-    label.textContent = weekOffset===0?'Semana':'Semana próxima';
+    label.textContent = weekOffset===0?'Semana':weekOffset>0?'Semana próxima':'Semana anterior';
     wrap.appendChild(label);
     const grid = document.createElement('div');
     grid.className = 'week-grid';
@@ -311,7 +312,7 @@
 
   function switchWeek(off) {
     weekOffset=off;
-    document.querySelectorAll('.week-tab').forEach((b,i)=>b.classList.toggle('active',(i===0&&off===0)||(i===1&&off===7)));
+    document.querySelectorAll('.week-tab').forEach((b,i)=>b.classList.toggle('active',(i===0&&off===-7)||(i===1&&off===0)||(i===2&&off===7)));
     renderContent();
   }
 
