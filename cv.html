@@ -159,6 +159,7 @@
 </div>
 
 <div class="week-tabs">
+  <button class="week-tab" onclick="switchWeek(-7)">Semana anterior</button>
   <button class="week-tab active" onclick="switchWeek(0)">Esta semana</button>
   <button class="week-tab" onclick="switchWeek(7)">Semana próxima</button>
 </div>
@@ -235,7 +236,7 @@
     const wrap=document.createDocumentFragment();
     const monday=getMondayOfWeek(weekOffset);
     const days=Array.from({length:7},(_,i)=>{ const d=new Date(monday); d.setDate(monday.getDate()+i); return d; });
-    const label=document.createElement('p'); label.className='section-label'; label.textContent=weekOffset===0?'Semana':'Semana próxima'; wrap.appendChild(label);
+    const label=document.createElement('p'); label.className='section-label'; label.textContent=weekOffset===0?'Semana':weekOffset>0?'Semana próxima':'Semana anterior'; wrap.appendChild(label);
     const grid=document.createElement('div'); grid.className='week-grid';
     days.forEach(day=>{ const iso=isoDate(day); const col=document.createElement('div'); col.className='day-col'+(iso===today?' today':''); col.innerHTML=`<div class="day-header">${DIAS_CORTO[day.getDay()]}<span class="day-num">${day.getDate()}</span></div>`; const evts=document.createElement('div'); evts.className='day-events'; const dayOCs=ocs.filter(o=>o.fecha_entrega===iso); if(!dayOCs.length){evts.innerHTML='<div class="empty-day">—</div>';}else dayOCs.forEach(oc=>{const ev=document.createElement('div');ev.className='day-event '+cardClass(oc.estado);ev.textContent=oc.proveedor;ev.onclick=()=>openModal(oc);evts.appendChild(ev);}); col.appendChild(evts); grid.appendChild(col); });
     wrap.appendChild(grid); return wrap;
@@ -255,7 +256,7 @@
     const main=document.getElementById('main-content');main.innerHTML='';main.appendChild(frag);
   }
 
-  function switchWeek(off) { weekOffset=off; document.querySelectorAll('.week-tab').forEach((b,i)=>b.classList.toggle('active',(i===0&&off===0)||(i===1&&off===7))); renderContent(); }
+  function switchWeek(off) { weekOffset=off; document.querySelectorAll('.week-tab').forEach((b,i)=>b.classList.toggle('active',(i===0&&off===-7)||(i===1&&off===0)||(i===2&&off===7))); renderContent(); }
 
   function openModal(oc) {
     document.getElementById('m-proveedor').textContent=oc.proveedor;
