@@ -209,7 +209,7 @@
 <script>
   const DASHBOARD_URL = 'https://juanautomatationai.app.n8n.cloud/webhook/wf-dashboard';
   const STOCK_URL     = 'https://juanautomatationai.app.n8n.cloud/webhook/wf-stock-alert';
-  const LOCAL_FILTER  = 'Saladbowl CV';
+  const LOCAL_FILTER  = ['Saladbowl Ciudad Vieja', 'Saladbowl CV'];
   const LOCAL_NOMBRE  = 'Ciudad Vieja';
   const DIAS_CORTO = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
   const DIAS_LARGO = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
@@ -297,7 +297,7 @@
     today=isoToday();
     const now=new Date();
     document.getElementById('top-date').textContent=DIAS_LARGO[now.getDay()]+' '+now.getDate()+' de '+MESES[now.getMonth()]+' '+now.getFullYear();
-    try{const res=await fetch(DASHBOARD_URL);const data=await res.json();allOCs=(data.ocs||[]).filter(o=>o.local===LOCAL_FILTER);renderContent();}
+    try{const res=await fetch(DASHBOARD_URL);const data=await res.json();allOCs=(data.ocs||[]).filter(o=>LOCAL_FILTER.includes(o.local));renderContent();}
     catch{document.getElementById('main-content').innerHTML='<div class="empty-section">⚠️ Error al cargar. Tocá "Actualizar" para reintentar.</div>';}
   }
 
