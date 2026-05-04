@@ -266,6 +266,7 @@
 </div>
 
 <div class="week-tabs">
+  <button class="week-tab" onclick="switchWeek(-7)">Semana anterior</button>
   <button class="week-tab active" onclick="switchWeek(0)">Esta semana</button>
   <button class="week-tab" onclick="switchWeek(7)">Semana próxima</button>
 </div>
@@ -291,7 +292,7 @@
 
 <script>
   const DASHBOARD_URL = 'https://juanautomatationai.app.n8n.cloud/webhook/wf-dashboard';
-  const LOCAL_FILTER  = 'Saladbowl CV';
+  const LOCAL_NAMES_CV = ['Saladbowl Ciudad Vieja', 'Saladbowl CV'];
   const DIAS_CORTO  = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
   const DIAS_LARGO  = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
   const MESES       = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
@@ -371,7 +372,7 @@
 
     const label = document.createElement('p');
     label.className = 'section-label';
-    label.textContent = weekOffset === 0 ? 'Semana' : 'Semana próxima';
+    label.textContent = weekOffset === 0 ? 'Semana' : weekOffset > 0 ? 'Semana próxima' : 'Semana anterior';
     wrap.appendChild(label);
 
     const grid = document.createElement('div');
@@ -452,7 +453,7 @@
   function switchWeek(offset) {
     weekOffset = offset;
     document.querySelectorAll('.week-tab').forEach((btn, i) => {
-      btn.classList.toggle('active', (i === 0 && offset === 0) || (i === 1 && offset === 7));
+      btn.classList.toggle('active', (i === 0 && offset === -7) || (i === 1 && offset === 0) || (i === 2 && offset === 7));
     });
     renderContent();
   }
@@ -505,7 +506,7 @@
     try {
       const res  = await fetch(DASHBOARD_URL);
       const data = await res.json();
-      allOCs = (data.ocs || []).filter(oc => oc.local === LOCAL_FILTER);
+      allOCs = (data.ocs || []).filter(oc => LOCAL_NAMES_CV.includes(oc.local));
       renderContent();
     } catch(e) {
       document.getElementById('main-content').innerHTML =
